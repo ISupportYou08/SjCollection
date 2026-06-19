@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A modern movie catalog powered by Google Sheets.">
+  <title>MovieStream | Catalog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav-shell" aria-label="Primary navigation">
+      <a class="brand" href="index.html" aria-label="MovieStream home">
+        <span class="brand-mark">MS</span>
+        <span>MovieStream</span>
+      </a>
+      <a class="github-link" href="https://pages.github.com/" target="_blank" rel="noreferrer">GitHub Pages Ready</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Google Sheets movie database</p>
+        <h1 id="page-title">Browse movies, series, and episodes in a modern catalog.</h1>
+        <p class="hero-text">Navigate through categories, movies, seasons, and episodes synced from your Google Sheet.</p>
+      </div>
+      <div class="hero-panel" aria-label="Catalog summary">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        <p class="panel-label">Live Catalog</p>
+        <strong id="totalCount">0</strong>
+        <span id="statusSummary">Loading catalog...</span>
+      </div>
+    </section>
+
+    <section class="toolbar" aria-label="Catalog controls">
+      <label class="control search-control" for="searchInput">
+        <span>Search</span>
+        <input id="searchInput" type="search" placeholder="Search movies, series..." autocomplete="off">
+      </label>
+
+      <label class="control" for="categoryFilter">
+        <span>Category</span>
+        <select id="categoryFilter">
+          <option value="all">All categories</option>
+        </select>
+      </label>
+
+      <label class="control" for="sortSelect">
+        <span>Sort by</span>
+        <select id="sortSelect">
+          <option value="title-asc">Title A-Z</option>
+          <option value="title-desc">Title Z-A</option>
+          <option value="year-desc">Year newest</option>
+          <option value="year-asc">Year oldest</option>
+          <option value="rating-desc">Rating high-low</option>
+        </select>
+      </label>
+    </section>
+
+    <section id="loadingState" class="loading-state" aria-live="polite">
+      <span class="loader" aria-hidden="true"></span>
+      <p>Syncing with your movie catalog...</p>
+    </section>
+
+    <section id="errorState" class="message-state hidden" aria-live="assertive">
+      <h2>Could not load the catalog</h2>
+      <p id="errorMessage">Check your Google Sheet sharing permissions.</p>
+      <button id="retryButton" type="button">Retry</button>
+    </section>
+
+    <section id="emptyState" class="message-state hidden" aria-live="polite">
+      <h2>No content found</h2>
+      <p>Adjust the search, category, or sort controls to discover more titles.</p>
+    </section>
+
+    <!-- Breadcrumb Navigation -->
+    <nav id="breadcrumbNav" class="breadcrumb-nav hidden" aria-label="Breadcrumb navigation">
+      <button id="backToCategories" class="breadcrumb-btn">← Categories</button>
+      <button id="backToMovies" class="breadcrumb-btn hidden">← Movies</button>
+      <button id="backToSeasons" class="breadcrumb-btn hidden">← Seasons</button>
+    </nav>
+
+    <section id="catalogGrid" class="catalog-grid" aria-label="Movie catalog"></section>
+  </main>
+
+  <template id="categoryCardTemplate">
+    <article class="category-card">
+      <div class="cover-wrap">
+        <img class="cover-image" alt="" loading="lazy">
+      </div>
+      <div class="card-content">
+        <h2 class="title"></h2>
+        <p class="description"></p>
+        <span class="count-badge"></span>
+      </div>
+    </article>
+  </template>
+
+  <template id="movieCardTemplate">
+    <article class="movie-card">
+      <div class="cover-wrap">
+        <img class="cover-image" alt="" loading="lazy">
+        <span class="rating-badge"></span>
+      </div>
+      <div class="card-content">
+        <p class="category"></p>
+        <h2 class="title"></h2>
+        <div class="meta-row">
+          <span class="year"></span>
+          <span class="seasons-badge"></span>
+        </div>
+        <p class="description"></p>
+      </div>
+    </article>
+  </template>
+
+  <template id="seasonCardTemplate">
+    <article class="season-card">
+      <div class="cover-wrap">
+        <img class="cover-image" alt="" loading="lazy">
+      </div>
+      <div class="card-content">
+        <h2 class="title"></h2>
+        <div class="meta-row">
+          <span class="season-number"></span>
+          <span class="year"></span>
+        </div>
+        <p class="description"></p>
+      </div>
+    </article>
+  </template>
+
+  <template id="episodeCardTemplate">
+    <article class="episode-card">
+      <div class="episode-content">
+        <div class="episode-thumb-wrap">
+          <img class="episode-thumb" alt="" loading="lazy">
+        </div>
+        <div class="episode-number"></div>
+        <div class="episode-info">
+          <h3 class="title"></h3>
+          <p class="description"></p>
+          <div class="meta-row">
+            <span class="duration"></span>
+          </div>
+        </div>
+        <button class="watch-btn" aria-label="Watch episode">▶</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
