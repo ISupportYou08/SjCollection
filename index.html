@@ -153,6 +153,17 @@
     </article>
   </template>
 
+  <div id="videoModal" class="video-modal hidden" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle" aria-hidden="true">
+    <div class="video-modal-backdrop" data-close-modal></div>
+    <div class="video-modal-dialog" role="document">
+      <div class="video-modal-bar">
+        <h2 id="videoModalTitle" class="video-modal-title"></h2>
+        <button id="videoModalClose" class="video-modal-close" type="button" aria-label="Close player" data-close-modal>×</button>
+      </div>
+      <div id="videoModalBody" class="video-modal-body"></div>
+    </div>
+  </div>
+
   <script src="script.js" defer></script>
 </body>
 </html>
