@@ -44,7 +44,11 @@ const elements = {
   breadcrumbNav: document.querySelector("#breadcrumbNav"),
   backToCategories: document.querySelector("#backToCategories"),
   backToMovies: document.querySelector("#backToMovies"),
-  backToSeasons: document.querySelector("#backToSeasons")
+  backToSeasons: document.querySelector("#backToSeasons"),
+  videoModal: document.querySelector("#videoModal"),
+  videoModalTitle: document.querySelector("#videoModalTitle"),
+  videoModalBody: document.querySelector("#videoModalBody"),
+  videoModalClose: document.querySelector("#videoModalClose")
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -74,6 +78,16 @@ function bindControls() {
   elements.backToCategories.addEventListener("click", () => navigateTo("categories", { centerFeature: true }));
   elements.backToMovies.addEventListener("click", () => navigateTo("movies", { centerFeature: true }));
   elements.backToSeasons.addEventListener("click", () => navigateTo("seasons", { centerFeature: true }));
+
+  elements.videoModal.querySelectorAll("[data-close-modal]").forEach((el) => {
+    el.addEventListener("click", closeVideoModal);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !elements.videoModal.classList.contains("hidden")) {
+      closeVideoModal();
+    }
+  });
 }
 
 async function loadCatalog({ showLoading = true } = {}) {
@@ -556,7 +570,7 @@ function createEpisodeCard(episode) {
   if (episode.videoUrl) {
     watchBtn.setAttribute("aria-label", `Play ${episode.title}`);
     watchBtn.addEventListener("click", () => {
-      window.open(episode.videoUrl, "_blank");
+      openVideoModal(episode.videoUrl, episode.title);
     });
   } else {
     watchBtn.style.display = "none";
@@ -678,6 +692,103 @@ function getGoogleDriveFileId(url) {
   }
   const queryIdMatch = url.match(/[?&]id=([^&]+)/i);
   return queryIdMatch ? queryIdMatch[1] : "";
+}
+
+function openVideoModal(rawUrl, title) {
+  const url = String(rawUrl || "").trim();
+  if (!url) {
+    return;
+  }
+
+  elements.videoModalTitle.textContent = title || "Now playing";
+  elements.videoModalBody.innerHTML = "";
+  elements.videoModalBody.appendChild(buildVideoPlayer(url));
+
+  elements.videoModal.classList.remove("hidden");
+  elements.videoModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  elements.videoModalClose.focus();
+}
+
+function closeVideoModal() {
+  elements.videoModal.classList.add("hidden");
+  elements.videoModal.setAttribute("aria-hidden", "true");
+  elements.videoModalBody.innerHTML = "";
+  document.body.style.overflow = "";
+}
+
+function buildVideoPlayer(url) {
+  const embedUrl = getVideoEmbedUrl(url);
+
+  if (embedUrl) {
+    const iframe = document.createElement("iframe");
+    iframe.src = embedUrl;
+    iframe.title = "Video player";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    iframe.allowFullscreen = true;
+    return iframe;
+  }
+
+  if (isDirectVideoFile(url)) {
+    const video = document.createElement("video");
+    video.src = url;
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    return video;
+  }
+
+  const message = document.createElement("div");
+  message.className = "video-modal-message";
+  const text = document.createElement("p");
+  text.textContent = "This video can't be embedded here.";
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  link.textContent = "Open the video in a new tab";
+  message.append(text, link);
+  return message;
+}
+
+function getVideoEmbedUrl(url) {
+  const driveFileId = getGoogleDriveFileId(url);
+  if (driveFileId) {
+    return `https://drive.google.com/file/d/${driveFileId}/preview`;
+  }
+
+  const youTubeId = getYouTubeId(url);
+  if (youTubeId) {
+    return `https://www.youtube.com/embed/${youTubeId}?autoplay=1`;
+  }
+
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vimeoMatch) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+  }
+
+  return "";
+}
+
+function getYouTubeId(url) {
+  const patterns = [
+    /youtu\.be\/([\w-]{11})/i,
+    /youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)([\w-]{11})/i,
+    /[?&]v=([\w-]{11})/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+
+  return "";
+}
+
+function isDirectVideoFile(url) {
+  return /\.(mp4|webm|ogg|ogv|mov|m4v)(\?.*)?$/i.test(url);
 }
 
 function startAutoRefresh() {
